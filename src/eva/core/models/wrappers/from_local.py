@@ -35,7 +35,8 @@ class ModelFromLocal(base.BaseModel[torch.Tensor, torch.Tensor]):
             transforms: The transforms to apply to the output tensor
                 produced by the model.
         """
-        super().__init__(transforms=transforms)
+        #super().__init__(transforms=transforms)
+        super().__init__()
 
         self.local_repo = local_repo_path
         self.model_name = model_name
