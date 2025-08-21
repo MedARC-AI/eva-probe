@@ -46,9 +46,10 @@ class ModelFromLocal(base.BaseModel[torch.Tensor, torch.Tensor]):
 
     @override
     def load_model(self) -> None:
-        #Only loads models from local
-#        model = torch.hub.load("./dinov3", 'dinov3_vith16plus', source = 'local', weights = "./dinov3_vith16plus_pretrain_lvd1689m-7c1da9a5.pth")
+        #Only loads models from local.
+        #After a model has been loaded, it will be copied into local cache.
         model = torch.hub.load(self.local_repo, self.model_name, source = 'local', weights = self.weights_path)
+        print("Loaded model from local weights", self.weights_path)
         self._model = model        
         return
 
