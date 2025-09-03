@@ -4,7 +4,8 @@
 # Usage: ./download_gleason_arvaniti.sh [output_directory]
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OUTPUT_DIR="${1:-$SCRIPT_DIR/data/gleason_arvaniti_data}"
+REPO_ROOT="${SCRIPT_DIR%/*}"
+OUTPUT_DIR="${1:-$REPO_ROOT/data/gleason_arvaniti_data}"
 mkdir -p "$OUTPUT_DIR"
 
 echo "Downloading Gleason Arvaniti dataset to: $OUTPUT_DIR"
@@ -95,5 +96,8 @@ find "${OUTPUT_DIR}" -mindepth 1 -type d \( -name "TMA_images" -o -name "Gleason
 # echo "  └─ tma_info/"
 
 echo -e "\nRunning create_patches.py..."
+# remove files with "_" prefix, these corrupted files cause errors
+find "${OUTPUT_DIR}" -name '._*' -type f -delete  
+
 PATCHES_DIR="${SCRIPT_DIR%/*}/data/arvaniti_gleason_patches"
 python "$SCRIPT_DIR/create_patches.py" "${OUTPUT_DIR}" "${PATCHES_DIR}"

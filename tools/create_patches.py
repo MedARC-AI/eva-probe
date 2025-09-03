@@ -58,6 +58,8 @@ def save_patch(patch, saving_name):
 def sum_up_gleason(maskfile, n_class=4):
     # read the mask and count the grades
     mask = load_mask(maskfile)
+    if mask is None:
+        return None
     c = Counter(mask.flatten())
     grade_count = np.zeros(n_class, dtype=int)
     for i in range(n_class):
@@ -260,13 +262,13 @@ def main():
     patch_size = 750
     path_patches = os.path.join(output_prefix, 'train_validation_patches_%d' % patch_size)
 
-    # create patches and patch labels (training/validation sets)
-    for tma_name, tma_prefix in zip(tma_names, tma_prefixes):
-        proc = ImageProcessor(path_images, path_train_masks, path_patches)
-        proc.create_annotated_patches(tma_prefix, patch_size=patch_size)
-        # write down a summary (primary and secondary Gleason patterns) of the annotation
-        csv_file = os.path.join(tma_info_path, '%s_gleason_scores.csv' % tma_name)
-        proc.count_gleason(tma_prefix, csv_file)
+    # # create patches and patch labels (training/validation sets)
+    # for tma_name, tma_prefix in zip(tma_names, tma_prefixes):
+    #     proc = ImageProcessor(path_images, path_train_masks, path_patches)
+    #     proc.create_annotated_patches(tma_prefix, patch_size=patch_size)
+    #     # write down a summary (primary and secondary Gleason patterns) of the annotation
+    #     csv_file = os.path.join(tma_info_path, '%s_gleason_scores.csv' % tma_name)
+    #     proc.count_gleason(tma_prefix, csv_file)
 
     # TMAs used for testing
     tma_name, tma_prefix = 'ZT80', 'ZT80_38'
