@@ -4,25 +4,25 @@
 # Usage: ./download_gleason_arvaniti.sh [output_directory]
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OUTPUT_DIR="${1:-$SCRIPT_DIR/../data/gleason_arvaniti_data}"
+OUTPUT_DIR="${1:-$SCRIPT_DIR/data/gleason_arvaniti_data}"
 mkdir -p "$OUTPUT_DIR"
 
 echo "Downloading Gleason Arvaniti dataset to: $OUTPUT_DIR"
 
 # Direct download URLs 
 declare -A URLS=(
-    # ["ZT111_4_A"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/YWA5TT"
-    # ["ZT111_4_B"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/3IKI3C"
-    # ["ZT111_4_C"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/RAFKES"
-    # ["ZT199_1_A"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/0SMDAH"
-    # ["ZT199_1_B"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/QEDF2L"
-    # ["ZT204_6_A"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/0W77ZC"
-    # ["ZT204_6_B"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/0R6XWD"
-    # ["ZT76_39_A"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/L2E0UK"
-    # ["ZT76_39_B"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/UFDMZW"
-    # ["ZT80_38_A"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/HUEM2D"
-    # ["ZT80_38_B"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/YVNUNM"
-    # ["ZT80_38_C"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/BSWH3O"
+    ["ZT111_4_A"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/YWA5TT"
+    ["ZT111_4_B"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/3IKI3C"
+    ["ZT111_4_C"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/RAFKES"
+    ["ZT199_1_A"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/0SMDAH"
+    ["ZT199_1_B"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/QEDF2L"
+    ["ZT204_6_A"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/0W77ZC"
+    ["ZT204_6_B"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/0R6XWD"
+    ["ZT76_39_A"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/L2E0UK"
+    ["ZT76_39_B"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/UFDMZW"
+    ["ZT80_38_A"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/HUEM2D"
+    ["ZT80_38_B"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/YVNUNM"
+    ["ZT80_38_C"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/BSWH3O"
     ["Gleason_masks_train.tar.gz"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/PPWGZZ"
     ["Gleason_masks_test_pathologist1.tar.gz"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/62QWVZ"
     ["Gleason_masks_test_pathologist2.tar.gz"]="https://dataverse.harvard.edu/api/access/datafile/:persistentId?persistentId=doi:10.7910/DVN/OCYCMP/AIJYC5"
@@ -85,14 +85,14 @@ fi
 # Clean up empty directories (except the ones we want to keep)
 find "${OUTPUT_DIR}" -mindepth 1 -type d \( -name "TMA_images" -o -name "Gleason_masks_train" -o -name "Gleason_masks_test" -o -name "tma_info" \) -prune -o -type d -empty -exec rmdir {} \; 2>/dev/null || true
 
-echo "Dataset organized successfully!"
-echo "Final directory structure at: $OUTPUT_DIR"
-echo "  ├─ TMA_images/"
-echo "  ├─ Gleason_masks_train/"
-echo "  ├─ Gleason_masks_test/"
-echo "  │    ├─ Gleason_masks_test_pathologist1/"
-echo "  │    └─ Gleason_masks_test_pathologist2/"
-echo "  └─ tma_info/"
+# echo "Dataset organized successfully!"
+# echo "Final directory structure at: $OUTPUT_DIR"
+# echo "  ├─ TMA_images/"
+# echo "  ├─ Gleason_masks_train/"
+# echo "  ├─ Gleason_masks_test/"
+# echo "  │    ├─ Gleason_masks_test_pathologist1/"
+# echo "  │    └─ Gleason_masks_test_pathologist2/"
+# echo "  └─ tma_info/"
 
 echo -e "\nRunning create_patches.py..."
 PATCHES_DIR="${SCRIPT_DIR%/*}/data/arvaniti_gleason_patches"
