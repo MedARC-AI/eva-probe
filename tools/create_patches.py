@@ -228,9 +228,10 @@ def main():
         prefix = sys.argv[1]  # Input directory (raw dataset)
         output_prefix = sys.argv[2]  # Output directory (patches)
     else:
-        # Default paths for backward compatibility
-        prefix = '/data3/eirini/dataset_TMA'
-        output_prefix = './arvaniti_gleason_patches'
+        # Default paths for the project
+        script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        prefix = os.path.join(script_dir, 'data', 'gleason_arvaniti_data')
+        output_prefix = os.path.join(script_dir, 'data', 'arvaniti_gleason_patches')
     
     print(f"Input dataset directory: {prefix}")
     print(f"Output patches directory: {output_prefix}")
