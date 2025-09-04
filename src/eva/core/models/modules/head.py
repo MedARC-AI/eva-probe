@@ -14,6 +14,7 @@ from eva.core.models.modules import module
 from eva.core.models.modules.typings import INPUT_BATCH, MODEL_TYPE
 from eva.core.models.modules.utils import batch_postprocess, grad, submodule_state_dict
 from eva.core.utils import parser
+import itertools
 
 
 class HeadModule(module.ModelModule):
@@ -74,7 +75,18 @@ class HeadModule(module.ModelModule):
     @override
     def configure_optimizers(self) -> Any:
         parameters = self.head.parameters()
-        optimizer = self.optimizer(parameters)
+
+        #If any parameters in the model have grad = true, then we want to include them
+        include_backbone = False
+        for param in self.backbone.parameters():
+            if param.requires_grad:
+                include_backbone = True
+                break
+        if not include_backbone:
+            optimizer = self.optimizer(parameters)
+        else:
+            optimizer = self.optimizer(itertools.chain(parameters, self.backbone.parameters()))
+
         lr_scheduler = self.lr_scheduler(optimizer)
         return {"optimizer": optimizer, "lr_scheduler": lr_scheduler}
 

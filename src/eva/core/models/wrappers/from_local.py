@@ -15,16 +15,18 @@ from eva.core.models.wrappers import _utils, base
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import math
 
 class LoRALinear(nn.Module):
     def __init__(self, linear_layer, rank: int, alpha: float):
         super().__init__()
+
         self.linear = linear_layer
         self.in_features = linear_layer.in_features
         self.out_features = linear_layer.out_features
         self.rank = rank
         self.alpha = alpha
-
+    
         # Freeze the original linear layer's weights
         # Not needed right now
         #self.linear.weight.requires_grad = False
@@ -35,8 +37,13 @@ class LoRALinear(nn.Module):
         self.lora_A = nn.Parameter(torch.zeros(self.rank, self.in_features))
         self.lora_B = nn.Parameter(torch.zeros(self.out_features, self.rank))
 
+        #We will do this differently...
+        #We will have A and B be the same shape, but have a frozen gaussian matrix between them
+        
+
         self.lora_A.requires_grad = True
         self.lora_B.requires_grad = True
+        
 
         # Initialization
         nn.init.kaiming_uniform_(self.lora_A, a=math.sqrt(5))
@@ -48,7 +55,7 @@ class LoRALinear(nn.Module):
 
         # LoRA forward pass: (x * A^T) * B^T
         lora_output = (self.alpha / self.rank) * (x @ self.lora_A.T @ self.lora_B.T)
-
+        #print(self.lora_B)
         return original_output + lora_output
 
 # Define LoRA hyperparameters
@@ -58,16 +65,16 @@ lora_alpha = 16
 def apply_lora_to_model(model: nn.Module, rank: int, alpha: float):
     for name, module in model.named_modules():
         # Target the q and v projection linear layers in attention blocks
-        if isinstance(module, Linear):
+        if isinstance(module, torch.nn.Linear):
             # Get the parent module
             parent_name = ".".join(name.split('.')[:-1])
             parent_module = model
             for part in parent_name.split('.'):
                 parent_module = getattr(parent_module, part)
-
             # Replace the original linear layer with the LoRALinear wrapper
+            loralin = LoRALinear(module, rank, alpha)
             setattr(parent_module, name.split('.')[-1], LoRALinear(module, rank, alpha))
-            print(f"✅ Applied LoRA to: {name}")
+            print(f"✅ Applied LoRA to: {name}", flush = True)
 
 class ModelFromLocal(base.BaseModel[torch.Tensor, torch.Tensor]):
     """Wrapper class for models which are initialized from functions.
@@ -115,12 +122,12 @@ class ModelFromLocal(base.BaseModel[torch.Tensor, torch.Tensor]):
         #Set all parameters to off
         apply_lora_to_model(model, lora_rank, lora_alpha)
 
-        for param in model.parameters():
-            print(param.requires_grad)
+        #for param in model.parameters():
+        #    print(param.requires_grad)
 
-        print(model)
+        #print(model, flush = True)
 
-        exit()
+        #exit()
 
 
         return
