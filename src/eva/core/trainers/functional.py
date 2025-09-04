@@ -88,6 +88,10 @@ def run_evaluation(
     test_scores = None
 
     if "fit" in stages:
+        #print(model, flush = True)
+        for param in model.parameters():
+            print(param, param.requires_grad)
+        exit()
         trainer.fit(model, datamodule=datamodule)
     if "validate" in stages and getattr(datamodule.datasets, "val", None) is not None:
         validation_scores = trainer.validate(

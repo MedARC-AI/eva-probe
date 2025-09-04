@@ -63,8 +63,10 @@ class HeadModule(module.ModelModule):
 
     @override
     def configure_model(self) -> Any:
-        if self.backbone is not None:
-            grad.deactivate_requires_grad(self.backbone)
+
+        #We turn this off because we will do this elsewhere
+        #if self.backbone is not None:
+        #    grad.deactivate_requires_grad(self.backbone)
 
         if isinstance(self.head, dict):
             self.head: MODEL_TYPE = parser.parse_object(self.head, expected_type=nn.Module)

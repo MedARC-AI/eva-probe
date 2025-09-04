@@ -35,8 +35,10 @@ class DataModule(pl.LightningDataModule):
             samplers: The desired samplers for the dataloaders.
         """
         super().__init__()
-
+        
+        print("initiliaze dataset")
         self.datasets = datasets or self.default_datasets
+        print(self.datasets)
         self.dataloaders = dataloaders or self.default_dataloaders
         self.samplers = samplers or self.default_samplers
 
