@@ -1,38 +1,350 @@
 #!/usr/bin/env bash
-# Download and prepare the BCSS dataset for EVA
-# Usage: ./download_bcss.sh /path/to/data
+# Usage: ./download_bcss_iter.sh /path/to/target_folder id_to_name.csv
+# Fully automatic BCSS dataset download using file IDs with original filenames
 
 set -e
 
-# Target root directory
 ROOT=${1:-"./data"}
+CSV_FILE=${2:-"id_to_name.csv"}
 DEST="$ROOT/bcss"
 
 echo "[INFO] Preparing BCSS dataset under $DEST"
-mkdir -p "$DEST"
+mkdir -p "$DEST/rgbs_colorNormalized"
+mkdir -p "$DEST/masks"
 
-# Google Drive folder links
-RGBS_ID="1cMvgHRIetLR1C_arBDUHa4iW_mddU2X3"
-MASKS_ID="1uYg1I1gvL_v6w1N0qq7-s7opr5lzsSA1"
-META_ID="1e-mr3zqaEeOVQQLgWEgSL8dIgAdsclnl"
+# Ensure gdown is installed
+pip install --upgrade gdown
 
-# Download function using gdown
-download_folder () {
-    ID=$1
-    OUT=$2
-    echo "[INFO] Downloading to $OUT ..."
-    mkdir -p "$OUT"
-    gdown --folder "$ID" -O "$OUT" --remaining-ok
+RGBS_IDS=(
+    12QPS0g2zGkpVX4rBJhB93BklZ59Kcy6Y
+    1HSSvVxY2zFjkKH-e3FphRXKqvubrK5Iz
+    1GI5H81BwOLvsM-8Db-dDYPN7FIpq-qJF
+    1asgiaRrkPBesgHNeg4sbFRb8ZQPJi4t1
+    1M-GtO0tQ0JDq2Q4E0T_JMCLXvaB6cdmP
+    1uJ1O6kkUeWC6zvloZQh2krLl0YXO49yy
+    16G7ZEwpc7NYNQ2cMz_V0ap5XS3zPRXoW
+    1nD2A5koMZe24b6J1uebIJ9UQlvt954iB
+    1eNdRyspZA9ytd7b6XXHwG8o1MabsKdYW
+    1jeBOgsDqLxKH3rbuH_5tg7sQvtWPjuOx
+    1Cw2MgWRwpd8jIxZJNJRNF05n62dLHVz2
+    1kmsPGlQf5QZ9y9Uv5eqyrfxC3kwJwDGb
+    115lfBSk8GJCjpcjqDxMdVk0exlgY_1KP
+    1UA5RZGv8feMEeOJFL6fclxUo6WXlIv9S
+    1lg1lJNUsw1qUrjNB1L9v01QPnrrujJt3
+    1dkYHkt5GKFf1JnfCVH7vCRJTxOmTPyxn
+    1hC1upxvHWdLK1TsMEeemA3uAmiGr4FLg
+    1RVgqQwm7VGZaZTEhf2KsO19rrIJ-cDQb
+    1COaU4vOgs5wWPto5RfT5oZGz7wpSrhhg
+    19wye7NLxx6Oe4GmpCb_4HVPfNlvXytoo
+    1Ewmzyd_zIXMFQKANJJ5HkKEmCuZ7FdMh
+    1dgRRbkdTtllv66hphZX5TAtZLXfmt1-r
+    1orYFQOWTme5xCvliCimv1247IbBpDscN
+    1WsAAzB9CK_8zk3telggXfgieUamVHHrV
+    10z5H7l9S3NEwnffZ2z-zpznImmNsmukr
+    14UkbDn4B1-YqrF3T7jD2AWMjvwVzs9Qc
+    1V_ot9idTvzL-m9K58qncKMtzA5GcxNls
+    1BXA1zh78ZdWAHH5wIxEZfxbdPz1szBQb
+    17Z26m1MmojFDh3nIgmSdtobs1FWTKa_m
+    10dqRt5-MzVLRW7vpdRXHYHTZhNmZyVRr
+    11EmYxgr_UuugI5Mep9-XWVTtGokG8Hpz
+    1RoWK6njpizWqBmwj1PwZAqBmHevYBdnk
+    1o8jDAcMxdSSKpa9Uz5dsF43Vw3ZbVSg7
+    1EvucoeVGqyC1XKv2T9pvH9ucqexpDPW0
+    1G1YCk-ScCr4psRsI_TkgeZ-zJ0PcGCr8
+    1nH5s9eg0PrINESHrLm7DkJSQ_7LPhLKs
+    179-14VLwPtZ8TEZEYN5Au3WCH8Y-gDru
+    1lINcRq9_nk2-tPLFAQkOyXJO1ladMjpe
+    1LJ_8xyLhK24Z9uK3JbsoEnQahb5-_NAL
+    1tg3c88dmjIE4JqUGEqzPHFR27GF2Woyb
+    1tRUHfGcYUPZBSGl-qN3rT9-BunWukNkA
+    1A-gHPe41N67yH6YXuUkmS4We8KFOD_Jl
+    15uoWRcJSP1_hU82jvUXAW-1HIFrSFRO7
+    1ozfsF6t8XVKZFtIMq5q1nQa2FMIGvPYX
+    1Xm0VWgeosKiTmq1cR_Eh-nKChapYURcL
+    1oSh_Un8tWVr5IwL-WGxyX067wtszTEG5
+    1rejw-2y-2tAEa-pfrR53H5RisauqVvz_
+    1CgbqOHNLM8-Z-kN4C_eLo_qprp1JLZSr
+    1zusfLjcrOJIgh_1EP32F1owImJ0skfbP
+    10oaSVI73QSzA2GKKB5vvfySdocSyJC80
+    1sWJIX4bGR1XIvjG7RHNQWFepJ8RM-WAA
+    1J5h8UbArAl94xdoYzOqZgsPE-rbQQo9V
+    1cREutnJE24mqovhipHpVSH83g5Lvg_A7
+    1AUoaO_9aH52tFrBQDchQrVYgUyYQPbAk
+    1L9HFKitmuXLD-HOkehufu7rqA3R8Q462
+    154SSZTDodj8BqtkCrSNX6bQXrZ4-sV9y
+    1uIUNp706E48Ci7NFGB8ZBs6t9UxlfJb2
+    1n7gxdQKIcRtPJxAevJgdmfXmDtlT4-Rc
+    1XkJqci8TXLZYgAprR0k8w0dy0nvg-BdH
+    1o1BrpKYyCSQozNBLiEM6S-6PxL0TjM41
+    1l5tWejfH9vcLhVqprGVM_pp1R1Cz9dSD
+    1m6zX6it_x-IkOfWmjbM9P5KRfeD73VOV
+    1EZiefrqIWms8ZdllAffWcqxDUPNxsTkO
+    12NiEhJYlOV6DcV-Dnpvsocqq0VwWb691
+    1JnfWux95KhjYDHLIJrEvtZLh3uqLGLjQ
+    1PNe3q_yp8XUEAV4ZvxJFI1v7LK14kbLw
+    1L6PYpEikmefnlQEme2RIp0jmCvF-ZqKk
+    1YZuOqDyUrepm6r3ytTRIQshTBAYzDZpV
+    1sGLiJbQX9x9afOddkPHzMC8bAf-FguKx
+    113_WzhdQe7itYRltN5wGAJ9UULRUjnpn
+    10nOpRuOSc4bVj5ngSoe--Tihrvx_q1YR
+    1Jn59rmHKcfJ9RBGNAPmWjgeT-ULNRMwT
+    1Lw0CplIPsdZ7goUJC0MQad4ke7WExPlh
+    1tQmRPd2r5wU_B-6aBgBYZtGbO5e9sKZu
+    1HATOSh8DfAoyZ4J_k7B5EYGSGqxoRZW-
+    16fSgInpDkMy973cSZUWsUgwZoEFooX6B
+    1ubZdPq4FT3g5jbpfTuEipONITQ_My7mq
+    1HUTTwtOjn7Id5giwE652PMMCwgBDOR4u
+    1-gmjk5c6XeDmlPaH6P4TGCvhphNvUgs8
+    1e6MoghjvIhgFB8TaNtJoXb8osdzFVq0J
+    1WWVgzT5rnrG_p7WMT-9Lil2k9U074WR_
+    125ICRfrg9q7JcIhAS6uoLiJAxw--DMLO
+    1SXz4GEMsp1JAZme55_tpFr-tkbuOpmaU
+    1HZSy9V0LV8n8gBS5n9SYkzxRob-Hgnlw
+    1CDWyugXbaS74gBX89nO3XvoUA1Lca-M3
+    1SWWc5vV4E6FPGdgp3Ui7jZErZIinDPp4
+    1uWDStJc3-r3H0UgH3uZTkd36O2VliIec
+    1CDX7-auHnEaOXk0GVsaX2rT39n0PucIC
+    1_kd-WrNHDjIZNQMR77UoQNMZl72jh_YO
+    1t-lN-uuRvBe-xv667Gq2oEf0aI8k7xLx
+    1r39t24BSE2wtekO1f4m8tSLKI1TTzf4G
+    1u7sucPNtRhhe_KVkviljhDYqcvoF8ye6
+    10oybq4h9g_pE-N7rOImNfuQYGz7BE3dw
+    1Xp0KezKXaBRJDZrXA31QmAO751mOAKZu
+    1zHxMB6TDEKO7rpZUJKSwGLvuKeG_C-7H
+    1L6glA_oC0hgMr9GboMLlzk7bCaGyN8OR
+    1NIz3vziO39ApykcFwSDAnhU1FmCZpKJ_
+    1_3cZV94IWRdkMmIe2gXvn1PR03tAJT2C
+    1k3Sm6C0fp6N2YHwKrZglerUKEWZLbNop
+    1PNCuqSm28CmY-ooI-C6huChxDuqIoQYn
+    1lqV8lS3u3wmh2FgcuIbWSpSOWqhXeAXt
+    19K_u-FCajD059JGkwDwlfhM1wradEjwQ
+    10oXrjFiRmvzgDQ0kvEUuB6VdLtBzYXYI
+    1L2maAiUt2TRNahbDqR9AmvlaqB66sPAE
+    1OviKpvi9JgRRhHaGrzktuyRo7jyxwzW-
+    1moANSJspIcXIwXb_LaC7yaBmdr5Dx_66
+    1rJsYNMNKEzwEeForV_YOzbR-dmktu7cT
+    1BX_nB7P19yrjYDc3jNcCDEjJ8vzM6-pE
+    12YGDSlKkOc-h0gjsJvhYuMniKFx6Ir0Z
+    1yLVGKOb4fozNNOT15Cwsi6-13vtg2gd-
+    1qyD-ACewgUyB8pgizjRpwqeDJIVtmnAt
+    1l6KQOSigQsF8Ev13pnylWtEv2n4_gtpI
+    1XjJQNIdEGpMG6nWvXBp2V88TJAW7n8K6
+    1otX6RF5wdhPHNOIY8aBVwjmafOa9t_OB
+    1SaKjDf1JAveCVxVQ7LYC81ep08iVue5j
+    13I_Bi_fCrUbj5SdprwBU2p4qgyRQPre5
+    1hfrHTcW39VmhNzh47K1J2-3YCRdat7k8
+    15dc2QOdcvGvLPLpyGu_DQxX0rDBW5PJV
+    1Wu2ZwKqNmZ310oqT_b1gSIZ0ZgDfBbSo
+    1WtKX-01dTUc-ldnD5pb-Ry3sGjP8gNVy
+    1s__tOuiCs0GhDzUbodBtLGETam57vY8I
+    1Ov4k0TGrswmdmesHvGm07IsR9E472f2q
+    1kVDeeYG7bwgSSVLwRz90KPertxAJHbjE
+    16T0rmE-PI1H_jV3wFt9LABFWWcNmphaT
+    11cEryfJ5drHj2b7lbrpMcCRyxVzfJu7D
+    1R-5_WYM-YDz2xI9Z0TuBlnJzU0ppyYqd
+    1xMNOuIicDBnoV2lCy1Izx0ZifeHGey0n
+    1SpmhGPlm8GHoSNuwy1gK1YsxzPfzPpU8
+    1F0l4Dlcaz3fvGdKzAGOHpreR1_N-EEq_
+    16-0QRgEJcYthFt8VJgTcuu2Me2qtAMU5
+    11frtgcK1TyB_ICOZIwkcsCvaaWQIgfeR
+    1kFSMchw5eggaOS8F85DzBXGfy_Zf3mNI
+    19_OtYBHLJ4eaomD6XuIGZ6iaXsP0CTlj
+    1MXOO_snrKpvbCWXU7IQdPdl5cPCHqbnm
+    1RVhtn3vCzPn9fkeO9abE4SJ3W62s75Rn
+    1SLp0Q60oHgBEdogpAz7718A9Iegish5E
+    1U-LYsfh05OGvGrQekXvd369SR_HMPBEn
+    18-PW4Pf_pUPZ2vvtzw62CFvOHOeUjtxX
+    1DK9IDEewjjnHVH8VUXlJBjlTMCThwkus
+    1qhR0BLi7vZcsekG9pN9WdRJ4uXSwrsB-
+    1fEoP-Q8l3yHjoR51pVmlDIWHwR9QiVGB
+    15QRE7_S2xVqDF2rXgWiJy7kF5X5G2E0s
+    1hh8BBIkD24DxV1wmiUM9b6mKz0he7m6C
+    1xqzuZLcHiVPm2_GwaeNf0nxzlInIA5R9
+    1X2rPRIz9aJJEeA8aXENk2Fdx8ZchnL9j
+    1WRbkD24s9isfLKh1r2HNtyO93QPUD0bq
+    1sjBNNFvuW6TXtv0cGO8sNHcVAFlnJGev
+    18l05T3KecdeW6Mmzjn0s3Hs3k9QBCHp5
+    14YufCgyBR2ODs1reDoU-0mk8wtDCRtEj
+    1kGCbJaUGPmCl8HSjUcKzYyBZYVqgQiof
+    1dxaGPJTMlCkgSjDP6pVdxkk8w08hrFiq
+)
+
+MASKS_IDS=(
+    1LKBh-x71F8ybFqx_TAiCvx_zXDn2RSfh
+    1tVHSDmClo4l3Uq2tWRkHjJ2CYWlTXQdK
+    1KnEnqCgNlw2yEJizS6ebKf1b_4JPiSxw
+    1X8dmnVjDXVknX4GlqOFttjhuUVaHMwa_
+    1sfqvAZ3Oa6ntyTCvrdNXD9RDfj_aDYxH
+    1fe0LPxV20f_3e6DIJlZbyvgt2Ie-xuHh
+    1vGPwtXbiLSQxzUkjE4mZjBO7BPDyLaKi
+    1RLwxcTrsNL8Ny4zSKAnmtY3WwA07Mu-1
+    1Lw3_R9jo8Y5oinBWU6EcipS9TsE5be8Q
+    1Eb8cfEIfg5fRoKmxDmNim8Y4ivBZmPnX
+    1LTxmiGXzrZw5sQsi4_PFo6QwmuiJIpPV
+    10xh2-i8vLRaeg6nk8VZG62z5HU9cUFnJ
+    1mRH4CKqThaiVQqF0zr5Jih-CU7K3WfNh
+    1lwQeGOjZHScyA3aAPsYq8oLdIOyjYk9Q
+    1nn96pGic9_8VusTwqLodN8FiZsH-Ivkh
+    1vunwTvMAZUkntlLrNne5fpw9y_yFWJkA
+    1c0uzSDFpmfQK-Oc14aK9hlosvcAxJiZc
+    1HVfX5CSlUI1Dn4Sr3Hq43Qr5D5uPJeks
+    1u23KfDLsN11ZnKp1ZK5s53vEOvCdkeDP
+    1u2ak6tj4slvY155erpaYlzMb8IJbZbZM
+    1nT3dpZ7LwgssvnhlJZnQ55M8i1iPI7vM
+    1zkgXCgD61kNZVSVRHJhRP50EwwJRFfz3
+    1IeZbK5fqvo7Yt4syCt8R9Yv34vhBwBjC
+    1uFJdjRdtZQq_ftPk25HJ0L9S-s_r0c1g
+    1HZDh9rMo8Pf9-L-5MYaDjAOmv301hHxj
+    1bhjCzJ4d-lDQsY9yqxZMhSqMsaAo6e-Y
+    1Db3c-FJpSZ1pLOai42xajEaL8W9doxnI
+    1sFxDc-Nc7MMO_JcmPPraaF92bzpQIcE7
+    1pcdN88qv0AWdQET96Cmd_Zd0LX6qOXdF
+    16HOB64e1hKTo5dhILxNrBQHiecI-HrbA
+    1nk8KgD1r2SdDd1AtND9zZwAdWxLJ3lD-
+    1yZJPoRVSzOI-lp2PMkz-sGrhvSop_0zJ
+    1Q2peYZlUz20tkcavpgB7mfhyMDukng6u
+    1ylhs_zx4zwoJ5GuCoWbrpHjN_Om5RxLX
+    1jlO4s4lgErDtTGZfdsx7mNIxvwuWh_RH
+    13wpOUjn9SD80QZcuAY28xyJoiHVSYTcZ
+    1B42I4i9ZunvmQFKfUa4ydVh5fEFliWjF
+    191-OJXXVZxEt4FTsnM_cV2Ci2g7zMdkS
+    1B_B0aVsIwVk9ylgQvNVm50tEQikw4Azz
+    1c-V4Dt45hv_FaI0yPzixz3PJ3OMCluOM
+    1J1wkJZ4fXGaZVQu0p0wIx_i7L_FOI053
+    1vdElAFb_41xK1LvCNfYJu8yKDujEQOZf
+    1rgR67HTa6bgSTFJUaUTVwxOpVjOaNQxJ
+    1QZ99cuPHYmvuKd8IBo-hDQC8Yeyz6E62
+    1NKEKm0D5Vd5QBk9GRq9JKrIqxDgNa9eH
+    1IkzX4eZq0hQu025BntJ2LuVPMdmAK3pg
+    1cK28kd-y_B-JD90xjeLSR9bxbpAHfiix
+    1fW1HsXNvfcp0dYpHGc4i8EWPMQMkiT5Z
+    1dCerogLpaFc7fXZSi8o6esz4WvH3QxSY
+    1_2_Yy6xSIFQ72XypobNRpewX3R_TXvaR
+    1s065sAEOjOhhfMZuW0PGJFMSc77zQtKv
+    11C4dO7mOnAlyQzizLhJkC4PMYJsqBexO
+    1Q0gA99CulgyP7NK31ijzSO2X0WYpMeX7
+    1yZC_FN1Awd0BvZ5aBw7bdIY2V1lCUGDN
+    1vL4jMtby_RXKTaZ239rfFVDUNu5Kvh-R
+    1ZjFQ_IvXkAy3txMZrorMqMbe5faa6A1R
+    1OftUkyVByd1brjUi76FBlnoT0S1Jx94N
+    1HZ1R78YriN7dfGjT3cAIjwEIu9OH1ZTC
+    1ID9ih1oOmla73DOmbHzakyYcHONjc1kV
+    1KzrJzylJ-QXZ00mdeK4kLeuroEEvffZ7
+    1coSDwG5qs8keSG6IIMHRvlyKONdaJh7a
+    1W17I-GhHi1_ahUeg_6DjGGmtA8sFzqtA
+    1lubqHZNkJpEthr7IowzWWUAmWqVEFPD7
+    1X-3siUxh2zZ2oJEX0p78mKn99iWTFvuC
+    1YTpM5IfFpm1VgoZmU0llIjcTHmUgoQ-j
+    1N37nNuSEUgbCUMH-7U4wz195Ka1OKAqH
+    1f8rzHegNlfiujUxS_PH8uj5SzHWO1QlL
+    1ASw1I6MBQeBWliAMszzf9eAthVVS4Ad6
+    135MdGi6sA1w36V7_rawzngl3KUSrrNK9
+    1ETSQ0m99_Ejn71Zr-H8_I-VJewFdIueN
+    1e-juDuc4qDCm7dsZ4g8K_RFpJiVN2JD4
+    1Z8hsPCOEGWEgVN8CN5x-hp6eVeveN__w
+    1todSXYsdJdQd5Y8MCmXVPsRXXk2QtTFS
+    1aCgDaZcnK2jnvCiiTYZYSrHdZASwuc0l
+    1Vnsa5hq9vSloEnetcuz8hFXgIRsftOkq
+    1ghjn8DQHN8MTybVbdaC3wIfUgP-Iwwv4
+    1-GSB6jpb-62sr--7gIgFYDHKoNaT4VG6
+    1W4buqJ4XTh86xZThmnHEMKr24dv5O0eP
+    18-liOGozQSPWHFycjsqrAI-4eee9XC6h
+    1PnZdO6VMEZIyCZb8sNdHQgFPfIy4lXvx
+    1CmdeoTAZQcTGjvK0Gx0DWhWtCbMS_9I7
+    1XvFRJy9j2o_uthSUAJ8ZMIC6hbDtiHwO
+    1uBUyB5t0IvqJXSYtpjjlHk-x2FD1koar
+    1DR1ERUHXCuEQow8p3j5kq1n91cD2gF4U
+    1iPDWblzzXHrisIC-oeOmk0D2w0gd7ys8
+    1ktHDtxzzZgdbXCSuuxpkuieNhVR6w32R
+    1szThaH2gin7fCpgHPisakpXmVlkRZEWP
+    1jJ2Tlzm9YKQ3ogpOTolD-qjmJzEEAhs4
+    1zKHmBaohdppXqRqx6fudfeewUNEw9Loc
+    1_YPb0A8s2hpqt3jKMVOuaAsbX95gvrUC
+    1r_pyL08JM-9QL7G_fWVVTVtq34lPkf4p
+    15oxSYKqGwCrUzjR7VAcYTCwoR_ZS8m6P
+    1ZBOTCejJaoyfkYgL581xcm8F_3fROIgx
+    1IroXAcdSUyiY030hm9P0zrEk414NNtPT
+    1UaY3Wsf6sOMuBdZnjjxpGPjkXnajcQOg
+    1ivEanjj1-g-gs6-Fe0fnXCZmWAsq3vRr
+    10avNUcs2DNbjJ2Zrtz11LbsTqPLesrDD
+    1kqHdhHB2jx0l7qYTgNzaeW3s7hCbHcY4
+    1SGc-H0682mwml0y_zjicTQ_dbHNWTt7j
+    1X-RRVu-l6sMmnUqghgeXZypHPEf_ixh_
+    1Wc5X1Fw3PBYouafpegWDCPtKDXo9XJZ0
+    1r_ivSl7ZdrvGtr-_5Rco6vxyxnbk0BX1
+    13kGB5S2VMj8ZmJoqeAHzw4yHVe1YFLYH
+    1dLJkCsOYJCF--7nDRkUTmLS4DoMGHA2Y
+    1IZxg1Qcy-xRIb0cCMtayyt1OhFSeLOCD
+    1cxTBINmCAb_GknDN1Yfjb0ZLGJ9DM_zU
+    15zJ1IIyvj6CR21vZL_EeA3rO-E-GRE41
+    1spUSXK4C95DZVdQEvlX1tZkvrs-VR4t1
+    1bUYWmsaH0ZHII_sm7F9rs6ov4t7soq59
+    1C5c9cGC4_OayymyjukQbWXJUbHb1gOJp
+    1HJrGy7VykyqXJTZtHjpt1vr3XJIJtKhV
+    1dkSRQhp-KrxSQmEo1B89qZ0kpBVFbMRb
+    1h25gpmSDApon6vPcR9bRNloCr_XotBG3
+    1euI5CrbT6Umg2RPu2e_VvFdnQ4OUfCki
+    1x71QHPP7YGybpDNbPzLmZZ6wv5998gSx
+    1fwGANnXIguUgZeT-b-fCeEfU45eN4IWx
+    1BLw5wDeYKunpZHf93nuhky_F6u9Hot2g
+    1TUEa1u04WSID0NEvOXjoMnG3ezEF-aqt
+    1YIUpK_kBw6m3B5-6Y-bvxU2p1a8q-R8q
+    1PRlIP35pCvM8Yl8CARJBAFZsaLFdtYyP
+    1ofPlvKFWqVmTgUPHrDSHFf25CQsd25Nn
+    1Rhgi4eZ_cA4leStUOmC1Fha3Kl7vKZiP
+    1yW1SeOY7_6k-6fxY8WI8ZrqRdez9q-oi
+    1XyDD7FDBor2faJoOdi6dTXK4qTbjd43W
+    12t9ioe-dlSbSMoiVYUf-imSyKrZl7N8o
+    1rpZ8LEH-ZRq6FuGWnazSjcUS6PHjY15b
+    1NE3ZTzInzDScTjOUNBlFPu64XNvNpEak
+    1-4jJx0ujJBlzc-IsDh-eVhQ_aQ_Bc8uh
+    151jntGXRr4FrgHvBUPutA6Roz32b889_
+    1AYkC23LLTHdVUigRIMPCBXC5U0xj-Muy
+    1hpTIyWP2QXzBGgdofns0ei8EiYzdMgNX
+    1ZdpDzLwEaz1BY2aNc15TawBnfMQx8eES
+    1n7b5BHb-nTHDCBVR5bLnJCBzcux06vWe
+    1qpbIEz66UOPqvTKX7jWl_lubQUpuGaXg
+    1uPgT314PU-4KP5hu9mLs0s0_g7xSA2Di
+    1KyW7b6eRV1GgmwUSknS3ZCq13r8W9NGC
+    1P8I2mo2spikkmgetNi8_A6Z4l7cTJgzD
+    1k7uwiXIfrGnnOc5HeRV8V9bCYb_mFCHx
+    1eGCZ7TLlqHZ0KMUL4uUn3rQtaM0fdyOY
+    1p2T0LdI07UY6KYJPiUwLRiR0iDw5YaoR
+    1AD6873yrMSR36YqgqRqbFYXC8SNGRc-F
+    1D5kNIo5NhuXJt-jfRu26_U2Mtgm7I8Ho
+    1qzS4ZwIhs2lB8ZDhePcf7G5ozpT8Q8qI
+    1A05L8rg2Nc6m5Y7tyyL6DmIQrrQKsKmk
+    1xl4XpmYTwOJXE-cplDrPsJT2dInS7i-Z
+    1rnH5NzRKqvFx2r3mn9BKAwEMJXAP_Qx3
+    1brzRBS6eG-KjLEFVZmrq9gQvUagQHvBy
+    1v5BxgZLq1uP9akQNGLblMcAPlbkj2gJ3
+    1AvzQt1iGugzx__wqIm5l1xRZh-hzTCUn
+    1Z8bpYbldTiOY_3nCFJs-lY5KBD7KisVA
+    1XKOuTTm7Jx77Htgza6iQjfnYVNlyqyDB
+)
+
+download_and_rename() {
+    FILE_ID=$1
+    FILENAME=$2
+    OUT_DIR=$3
+
+    echo "[INFO] Downloading FILE_ID: $FILE_ID -> $FILENAME ..."
+    gdown "https://drive.google.com/uc?id=$FILE_ID" -O "$OUT_DIR/$FILENAME.png" --continue
+    echo "[INFO] Saved to $OUT_DIR/$FILENAME"
 }
 
-# Step 1: Download each folder
-download_folder "$RGBS_ID" "$DEST/rgbs_colorNormalized"
-download_folder "$MASKS_ID" "$DEST/masks"
-download_folder "$META_ID" "$DEST/meta"
+# --- Read CSV and download each file to the correct folder ---
+tail -n +2 "$CSV_FILE" | while IFS=, read -r FILE_ID FILENAME; do
+    if [[ " ${RGBS_IDS[*]} " =~ " ${FILE_ID} " ]]; then
+        OUT_DIR="$DEST/rgbs_colorNormalized"
+    elif [[ " ${MASKS_IDS[*]} " =~ " ${FILE_ID} " ]]; then
+        OUT_DIR="$DEST/masks"
+    else
+        echo "[WARN] FILE_ID $FILE_ID not in RGB or MASK list, skipping."
+        continue
+    fi
 
-# Step 2: Remove logs (not needed)
-if [ -d "$DEST/logs" ]; then
-    rm -rf "$DEST/logs"
-fi
+    download_and_rename "$FILE_ID" "$FILENAME" "$OUT_DIR"
+done
 
-echo "[INFO] BCSS dataset successfully downloaded and organized!"
+echo "[INFO] All BCSS images downloaded successfully!"
