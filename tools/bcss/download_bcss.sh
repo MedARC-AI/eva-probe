@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Usage: ./download_bcss_iter.sh /path/to/target_folder id_to_name.csv
+# Usage: ./download_bcss.sh /path/to/target_folder id_to_name.csv
 # Fully automatic BCSS dataset download using file IDs with original filenames
 
 set -e
