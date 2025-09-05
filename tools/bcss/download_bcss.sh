@@ -36,4 +36,3 @@ if [ -d "$DEST/logs" ]; then
 fi
 
 echo "[INFO] BCSS dataset successfully downloaded and organized!"
-tree -L 2 "$DEST"
