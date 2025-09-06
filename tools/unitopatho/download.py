@@ -26,7 +26,7 @@ HEADERS = {
 
 class UniToPathoDownloader:
     
-    def __init__(self, output_dir: str = "./unitopatho_dataset"):
+    def __init__(self, output_dir: str = "./unitopatho_raw"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
         self.session = None
