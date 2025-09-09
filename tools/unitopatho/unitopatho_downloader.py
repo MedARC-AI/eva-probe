@@ -105,7 +105,7 @@ def main():
     print("UniToPatho Dataset Downloader")
     print("=" * 50)
     
-    download_url = "https://ieee-dataport.s3.amazonaws.com/open/49617/UNITOPatho.zip?versionId=Ea17jXGkYwfwgIGxauamyLrFLr3eAHt7&response-content-disposition=attachment%3B%20filename%3D%22UNITOPatho.zip%22&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJOHYI4KJCE6Q7MIQ%2F20250907%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250907T062103Z&X-Amz-SignedHeaders=host&X-Amz-Expires=600&X-Amz-Signature=61a6237d510408a2d531437caf72325bd6dbe9c98ca480d11f04cdd96316c730"
+    download_url = "https://ieee-dataport.s3.amazonaws.com/open/49617/UNITOPatho.zip?versionId=Ea17jXGkYwfwgIGxauamyLrFLr3eAHt7&response-content-disposition=attachment%3B%20filename%3D%22UNITOPatho.zip%22&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAJOHYI4KJCE6Q7MIQ%2F20250909%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250909T184129Z&X-Amz-SignedHeaders=host&X-Amz-Expires=600&X-Amz-Signature=5260bb9a54429d3caeaac921ea628092382682903cc3618ee632fb14303f7b68"
     
     if len(sys.argv) > 1 and sys.argv[-1].startswith("http"):
         download_url = sys.argv[-1]
