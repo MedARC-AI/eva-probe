@@ -47,6 +47,8 @@ dependencies = [
     "rich>=13.7.1",
     "torchmetrics>=1.6.0",
     "nibabel>=3.2.2",
+    "huggingface-hub>=0.34.4",
+    "torchvision>=0.23.0",
 ]
 
 [project.urls]
@@ -237,3 +239,6 @@ omit = [
 
 [tool.coverage.comment]
 layout = "header, diff, flags, files, footer"
+
+[tool.uv.sources]
+transformers = { git = "https://github.com/huggingface/transformers.git" }
