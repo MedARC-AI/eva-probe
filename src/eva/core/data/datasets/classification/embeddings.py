@@ -26,7 +26,7 @@ class EmbeddingsClassificationDataset(embeddings_base.EmbeddingsDataset[torch.Te
 
     @override
     def load_target(self, index: int) -> torch.Tensor:
-        target = self._data.at[index, self._column_mapping["target"]]
+        target = int(self._data.at[index, self._column_mapping["target"]])
         return torch.tensor(target, dtype=torch.int64)
 
     @override
