@@ -1,5 +1,7 @@
 """Utilities and helper functions for models."""
 
+#/home/daniel/pathologyDino/dino_env/lib/python3.11/site-packages/eva/core/models/wrappers
+
 import hashlib
 import os
 import sys
@@ -22,14 +24,33 @@ def load_model_weights(model: nn.Module, checkpoint_path: str) -> None:
         checkpoint_path: The path to the model weights/checkpoint.
     """
     logger.info(f"Loading '{model.__class__.__name__}' model from checkpoint '{checkpoint_path}'")
-
+    
+    print("tstingi")
+    print(model.state_dict().keys())
     fs = cloud_io.get_filesystem(checkpoint_path)
     with fs.open(checkpoint_path, "rb") as file:
         checkpoint = cloud_io._load(file, map_location="cpu")  # type: ignore
         if isinstance(checkpoint, dict) and "state_dict" in checkpoint:
             checkpoint = checkpoint["state_dict"]
+        
+
+        if "teacher" in checkpoint:
+            checkpoint = checkpoint["teacher"]
+            #Need to remove the word backbone from everything I think?
+            checkpoint_new = {}
+            for key in list(checkpoint.keys()):
+                if "dino" in str(key) or "ibot" in str(key):
+                    checkpoint.pop(key, None)
+            for key, keyb in zip(checkpoint.keys(), model.state_dict().keys()):
+                checkpoint_new[keyb] = checkpoint[key]
+
+            checkpoint = checkpoint_new
+            #The pos embed is the only different one, idk why
+            new_shape = checkpoint["pos_embed"]
+            model.pos_embed = torch.nn.parameter.Parameter(new_shape)
 
         model.load_state_dict(checkpoint, strict=True)
+
 
     logger.info(f"Loading weights from '{checkpoint_path}' completed successfully.")
 
