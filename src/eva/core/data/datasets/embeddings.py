@@ -57,7 +57,7 @@ class EmbeddingsDataset(base.Dataset, Generic[TargetType]):
         """
         super().__init__()
 
-        self._root = root
+        self._root = os.path.abspath(os.path.expanduser(root))
         self._manifest_file = manifest_file
         self._split = split
         self._column_mapping = default_column_mapping | column_mapping

@@ -67,6 +67,14 @@ class HeadModule(module.ModelModule):
             grad.deactivate_requires_grad(self.backbone)
 
         if isinstance(self.head, dict):
+            init_args = self.head.get("init_args", {})
+            embed_dim = None
+            if self.backbone is not None and hasattr(self.backbone, "embed_dim"):
+                embed_dim = getattr(self.backbone, "embed_dim")
+            elif self.backbone is not None and hasattr(self.backbone, "num_features"):
+                embed_dim = getattr(self.backbone, "num_features")
+            init_args["in_features"] = embed_dim or 1280
+            self.head["init_args"] = init_args
             self.head: MODEL_TYPE = parser.parse_object(self.head, expected_type=nn.Module)
 
     @override

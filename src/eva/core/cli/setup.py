@@ -3,13 +3,24 @@
 import os
 import sys
 import warnings
+from pathlib import Path
 
 import jsonargparse
 import yaml
 from lightning_fabric.utilities import seed as pl_seed
 from loguru import logger
+from omegaconf import OmegaConf
 
 from eva.core.utils import workers
+
+
+def _register_custom_resolvers() -> None:
+    """Ensure EVA specific OmegaConf resolvers are available early."""
+    OmegaConf.register_new_resolver(
+        "resolve_embeddings_root",
+        _resolve_embeddings_root,
+        replace=True,
+    )
 
 
 def _configure_random_seed(seed: int | None = None) -> None:
@@ -42,6 +53,7 @@ def _configure_jsonargparse() -> None:
         urls_enabled=True,
         fsspec_enabled=True,
     )
+    _register_custom_resolvers()
 
 
 def _initialize_logger() -> None:
@@ -87,3 +99,24 @@ def setup() -> None:
     _initialize_logger()
     _suppress_warnings()
     _enable_mps_fallback()
+
+
+def _resolve_embeddings_root(
+    embeddings_root: str,
+    checkpoint_path: str,
+    model_name: str,
+    dataset_name: str,
+) -> str:
+    if embeddings_root:
+        return embeddings_root
+    if checkpoint_path:
+        path = Path(checkpoint_path)
+        if path.is_file():
+            path = path.parent
+        return str(path / "embeddings" / dataset_name)
+    return str(Path("data/embeddings") / model_name / dataset_name)
+
+
+# Register resolvers at import time so jsonargparse configs can use them even before
+# ``setup()`` runs (e.g. when the CLI parses configs during startup).
+_register_custom_resolvers()

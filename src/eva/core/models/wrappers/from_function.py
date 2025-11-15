@@ -1,8 +1,10 @@
 """Helper function from models defined with a function."""
 
+from pathlib import Path
 from typing import Any, Callable, Dict
 
 import jsonargparse
+import sys
 import torch
 from torch import nn
 from typing_extensions import override
@@ -45,8 +47,21 @@ class ModelFromFunction(base.BaseModel[torch.Tensor, torch.Tensor]):
 
     @override
     def load_model(self) -> None:
+        checkpoint_path = Path(self._checkpoint_path) if self._checkpoint_path else None
+
+        if checkpoint_path is not None and checkpoint_path.name == "teacher_checkpoint.pth":
+            repo_root = Path(__file__).resolve().parents[5].parent
+            if str(repo_root) not in sys.path:
+                sys.path.append(str(repo_root))
+            from dinov3.hub.backbones import dinov3_vith16plus
+
+            model = dinov3_vith16plus(pretrained=False)
+            _utils.load_model_weights(model, str(checkpoint_path))
+            self._model = model
+            return
+
         class_path = jsonargparse.class_from_function(self._path, func_return=nn.Module)
         model = class_path(**self._arguments or {})
-        if self._checkpoint_path is not None:
-            _utils.load_model_weights(model, self._checkpoint_path)
+        if checkpoint_path is not None:
+            _utils.load_model_weights(model, str(checkpoint_path))
         self._model = model

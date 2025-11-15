@@ -72,7 +72,8 @@ class BACH(vision.VisionDataset[tv_tensors.Image, torch.Tensor]):
         """
         super().__init__(transforms=transforms)
 
-        self._root = root
+        # Keep dataset root stable even if the working directory changes later on.
+        self._root = os.path.abspath(os.path.expanduser(root))
         self._split = split
         self._download = download
 
