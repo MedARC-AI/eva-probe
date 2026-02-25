@@ -60,7 +60,7 @@ declare -a TASKS=(
   "bracs:predict_fit:${EVA_DATA_ROOT}/bracs"
   "breakhist:predict_fit:${EVA_DATA_ROOT}/breakhis"
   "crc:predict_fit:${EVA_DATA_ROOT}/crc"
-  "gleason_offline:predict_fit:${EVA_DATA_ROOT}/arvaniti_gleason_patches"
+  "gleason:predict_fit:${EVA_DATA_ROOT}/arvaniti_gleason_patches"
   "mhist:predict_fit:${EVA_DATA_ROOT}/mhist"
   "pcam_10:predict_fit:${EVA_DATA_ROOT}/patch_camelyon"
   "pcam:predict_fit:${EVA_DATA_ROOT}/patch_camelyon"
@@ -162,7 +162,7 @@ for task in "${TASKS[@]}"; do
     else
       case "${dataset}" in
         consep|monusac) metric_pattern="MonaiDiceScore" ;;
-        bach|bracs|breakhist|crc|gleason_offline|panda_small) metric_pattern="MulticlassAccuracy" ;;
+        bach|bracs|breakhist|crc|gleason|panda_small) metric_pattern="MulticlassAccuracy" ;;
         *) metric_pattern="BinaryBalancedAccuracy" ;;
       esac
       mapfile -t metric_lines < <(python3 -c 'import json,sys; d=json.load(open(sys.argv[1], "r", encoding="utf-8")); pat=sys.argv[2]; matches=[(k,v["values"]) for stage in ("test","val") for ds in d["metrics"].get(stage,[]) for k,v in ds.items() if k.endswith(pat)]; metric,values=(matches[0] if matches else ("",[])); print(metric); print(", ".join(f"run_{i+1}={x:.6f}" for i,x in enumerate(values))); print(f"{sum(values)/len(values):.6f}" if values else "")' "${results_json_path}" "${metric_pattern}")
