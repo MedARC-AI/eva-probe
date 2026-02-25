@@ -197,8 +197,15 @@ class SemanticSegmentationModule(module.ModelModule):
             features = tensor
 
         if isinstance(self.decoder, segmentation.Decoder):
-            if not isinstance(features, list):
-                raise ValueError(f"Expected a list of feature map tensors, got {type(features)}.")
+            if isinstance(features, torch.Tensor):
+                features = [features]
+            elif isinstance(features, tuple):
+                features = list(features)
+            elif not isinstance(features, list):
+                raise ValueError(
+                    "Expected encoder features as tensor/list/tuple for segmentation decoder, "
+                    f"got {type(features)}."
+                )
             return self.decoder(DecoderInputs(features, to_size, tensor))
 
         return self.decoder(features)
