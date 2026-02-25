@@ -8,7 +8,7 @@ set -euo pipefail
 # Required positional args:
 #   1) /absolute/path/to/teacher_checkpoint.pth
 #   2) /absolute/path/to/output_root
-# e.g., ./run_all_fast_evals.sh /data/OpenMidnight_ckpts/openmidnight_checkpoint.pth /admin/home/paul/openmidnight_eval_results
+# e.g., ./run_evals.sh /data/OpenMidnight_ckpts/openmidnight_checkpoint.pth /admin/home/paul/openmidnight_eval_results
 
 DEFAULT_N_RUNS="${N_RUNS:-2}" # N_RUNS for everything except pcam (10shot) which is hardcoded to stay at 50 runs and cam16/panda which are hardcoded to 10 runs (down from default of 20); for final runs you should increase N_RUNS to 5 and modify 10->20 for cam16/panda
 EVA_DATA_ROOT="/block/eva-data" # change to the directory that contains all the eva datasets 
